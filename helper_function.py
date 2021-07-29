@@ -6,7 +6,7 @@ import cv2
 import math
 
 
-def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
+def draw_lines(img, lines, color=[220, 20, 60], thickness=4):
     for line in lines:
         for x1, y1, x2, y2 in line:
             cv2.line(img, (x1, y1), (x2, y2), color, thickness)
@@ -159,9 +159,9 @@ def process_image(image):
 
     if len(edges.shape) > 2:
         channel_count = edges.shape[2]
-        ignore_mask_color = (255,) * channel_count
+        ignore_mask_color = (225,) * channel_count
     else:
-        ignore_mask_color = 255
+        ignore_mask_color = 225
 
     cv2.fillPoly(mask, vertices, ignore_mask_color)
     masked_image = cv2.bitwise_and(edges, mask)
@@ -173,12 +173,14 @@ def process_image(image):
     min_line_len = 50
     max_line_gap = 150
     friction = 0.9
+    thickness = 4
 
     lines = cv2.HoughLinesP(masked_image, rho, theta,
                             threshold, np.array([]), min_line_len, max_line_gap)
     line_img = np.zeros(
         (masked_image.shape[0], masked_image.shape[1], 3), dtype=np.uint8)
-    draw_lines(line_img, lines)
+    lanes = get_lanes(lines, friction=friction)
+    draw_lines(line_img, lanes, thickness=thickness)
 
     final = cv2.addWeighted(image, 0.8, line_img, 1, 0)
 
@@ -188,7 +190,7 @@ def process_image(image):
         plt.imshow(image)
         x = [left_bottom[0], left_top[0], right_top[0], right_bottom[0]]
         y = [left_bottom[1], left_top[1], right_top[1], right_bottom[1]]
-        plt.plot(x, y, 'b--', lw=2)
+        plt.plot(x, y, 'b--', lw=4)
         plt.show()
 
         plt.figure(figsize=(15, 15))
